@@ -11,19 +11,52 @@ header{
 #ultimateTable {
   margin: 0 auto;
 }
-
-td {
-  text-align: center;
+table {
+  border-spacing: 0px;
 }
-.cell {
-  height: 40px;
-  width: 40px;
-  border: 1px solid black;
-  background-color: white;
+tbody {
+}
+td {
+  margin: 0;
+  text-align: center;
+  border: 1px solid gray;
+}
+.cellRow {
+
 }
 .ultimateCell {
+  border: 1px solid black;
+  border-spacing: 0px;
+  padding: 0px;
+
+}
+.cell {
+  height: 48px;
+  width: 48px;
+  padding: 0px;
+  font-family: Helvetica;
+  font-size: 42px;
+  border: 1px solid gray;
+  background-color: white;
+}
+.cell:hover {
+  background-color: rgba(200, 200, 200, .5);
+}
+/*.ultimateCell {
   border: 2px solid black;
+}*/
+/*#i0-0 {
+  background-color: green;
+  border-width: 5px;
+  border-color: green;
 }
-#i0-0 {
+
+#i1-1 > * {
+  color: transparent;
   background-color: blue;
+  visibility: hidden;
 }
+#i1-1 {
+  background-color: blue;
+  z-index: 10;
+}*/
