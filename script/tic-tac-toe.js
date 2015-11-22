@@ -1,4 +1,5 @@
 // document.addEventListener("DOMContentLoaded", function(event) {
+  var ultimateFlag;
   var playerX;
   var playerO;
 
@@ -21,22 +22,26 @@
       } else {
         currentTurn.turn = "X";
       }
+      var footer = document.getElementsByTagName('footer')[0]
+      footer.innerHTML = currentTurn.getPlayer().letter + "'s turn";
+      footer.style.color = currentTurn.getPlayer().color;
     }
   }
 
-  var board;
+  //keep a reference of what the board looks like
+  // var board;
 
   function fillCell (cell, player, ultimateId, smallId) {
-    var cellText = currentTurn.getPlayer().letter;
-    cell.innerHTML = cellText;
-    cell.style.color = currentTurn.getPlayer().color;
+    var cellText      = currentTurn.getPlayer().letter;
+    cell.innerHTML    = cellText;
+    cell.style.color  = currentTurn.getPlayer().color;
 
     //fill board obj
-    if (player === playerX) {
-      board[ultimateId][smallId.charAt(0)][smallId.charAt(1)]++;
-    } else {
-      board[ultimateId][smallId.charAt(0)][smallId.charAt(1)]--;
-    }
+    // if (player === playerX) {
+    //   board[ultimateId][smallId.charAt(0)][smallId.charAt(1)]++;
+    // } else {
+    //   board[ultimateId][smallId.charAt(0)][smallId.charAt(1)]--;
+    // }
 
     // var arrayToPush = cell.getAttribute('id').replace(/i/g, '');
     // currentTurn.getPlayer().filledCells.push(arrayToPush);
@@ -52,12 +57,24 @@
 
   //winning logic
   function checkWin (cell, player, ultimateId, smallId) {
+    //check to see if player has at least 3 moves in square
     if (player.filledCells[ultimateId].length > 2) {
-      if (playerX.squaresWon.indexOf(ultimateId) === -1 && playerO.squaresWon.indexOf(ultimateId) === -1) {
+      //check if either player has already won this square
+      if  (playerX.squaresWon.indexOf(ultimateId) === -1
+        && playerO.squaresWon.indexOf(ultimateId) === -1) {
+        //check if player wins this square
         if (loopCheck(player.filledCells[ultimateId])) {
-          console.log(player.letter, "wins!");
+          if (!document.getElementById('ultimateTable')) {
+            console.log("GAME OVER");
+            return true;
+          }
+          console.log(player.letter, "wins the box");
+          //add sqaure to players won square
           player.squaresWon.push(ultimateId);
+
           //call function to show change
+
+          //return wether or not player has won the game
           return loopCheck(player.squaresWon);
         }
       }
@@ -68,9 +85,11 @@
     //first check for diagonals
     if (playerArray.length > 2) {
       if (playerArray.indexOf('11') > -1) {
-        if (playerArray.indexOf('00') > -1 && playerArray.indexOf('22') > -1) {
+        if  (playerArray.indexOf('00') > -1
+          && playerArray.indexOf('22') > -1) {
           return true;
-        } else if (playerArray.indexOf('20') > -1 && playerArray.indexOf('02') > -1) {
+        } else if (playerArray.indexOf('20') > -1
+                && playerArray.indexOf('02') > -1) {
           return true;
         }
       }
@@ -84,10 +103,40 @@
       countSecond[Number(playerArray[i].charAt(1))]++;
     }
 
-    if (countFirst.indexOf(3) > -1 || countSecond.indexOf(3) > -1) {
+    if  (countFirst.indexOf(3) > -1
+      || countSecond.indexOf(3) > -1) {
       return true;
     }
     return false;
+  }
+
+  //next available board logic
+  function isValidSquare (ultimateId) {
+    //check if its the first move of the game
+    if (Object.keys(playerX.filledCells).length === 0) {
+      return true;
+    }
+      var arrayOfUltimateCells = document.getElementsByClassName('ultimateCell');
+      for (var i = 0; i < arrayOfUltimateCells.length; i++) {
+        if (arrayOfUltimateCells[i].getAttribute('style') === 'background-color: white;') {
+          if (arrayOfUltimateCells[i].getAttribute('id').replace(/i/g, '').replace(/-/g, '') === ultimateId) {
+            return true;
+          }
+        }
+      }
+      return false;
+  }
+
+  function setCellBackground (smallId) {
+    var arrayOfUltimateCells = document.getElementsByClassName('ultimateCell');
+    for (var i = 0; i < arrayOfUltimateCells.length; i++) {
+      if (arrayOfUltimateCells[i].getAttribute('id').replace(/i/g, '').replace(/-/g, '') === smallId) {
+        arrayOfUltimateCells[i].style.backgroundColor = 'white';
+      } else {
+        arrayOfUltimateCells[i].style.backgroundColor = "rgba(150, 150, 150, .6)"
+      }
+    }
+
   }
 
 //player parent
@@ -98,49 +147,99 @@
     this.squaresWon = [];
   }
 
+  //win function
+  function winner (player) {
+    var footer            = document.getElementsByTagName('footer')[0];
+    footer.innerHTML      = player.letter + " WINS!";
+    footer.style.color    = player.color;
+    footer.style.fontSize = '48px';
+
+    if (document.getElementById('ultimateTable')) {
+
+    } else {
+      document.getElementsByTagName('tbody');
+    }
+  }
+
   //what happens when a cell is clicked
   function cellWasClicked (cell) {
+    //first check if cell has been taken
     if (!cell.innerHTML) {
-      var player = currentTurn.getPlayer();
-      var id = cell.getAttribute('id');
-      var ultimateId = id.replace(/i/g, '').split('/')[0];
-      var smallId = id.split('/')[1];
+      var player      = currentTurn.getPlayer();
+      var id          = cell.getAttribute('id');
+      var ultimateId  = id.replace(/i/g, '').split('/')[0];
+      var smallId     = id.split('/')[1];
       // console.log(cell.getAttribute("id"), "was clicked")
-      fillCell(cell, player, ultimateId, smallId);
-      storeCell(cell, player.filledCells, ultimateId, smallId);
-      if (checkWin(cell, player, ultimateId, smallId)) {
-        console.log(player.letter, 'WINS THE GAME!');
+
+      //check if square is in next valid square
+      if (isValidSquare(ultimateId)) {
+        fillCell(cell, player, ultimateId, smallId);
+        storeCell(cell, player.filledCells, ultimateId, smallId);
+        if (checkWin(cell, player, ultimateId, smallId)) {
+          winner(player);
+          console.log(player.letter, 'WINS THE GAME!');
+          return;
+        }
+        setCellBackground(smallId);
+
+        currentTurn.changeTurns();
       }
-
-
-      currentTurn.changeTurns();
     }
   }
 
-  var TicTacToeParent = function () {
-    this.state = false;
-    this.location = null;
-    this.setState = function (player) {
-      // this.state = player;
-    }
-    this.setLocation = function (location) {
-      //this.location = location;
+  function resetBoard () {
+    if (!document.getElementById('start-screen')) {
+      if (confirm("Are you sure you want to reset?")) {
+        setUpBoard(ultimateFlag);
+      }
     }
   }
-  var Cell = Object.create(TicTacToeParent);
-    Cell.wasClicked = function (player) {
-        //set click state
-    }
-    Cell.tableCell = document.createElement('td');
-    Cell.tableCell.addEventListener('click', function () {this.wasClicked();})
 
-  function setUpBoard (flag) {
-    var main = document.getElementsByTagName('main')[0];
+  function firstSetUp () {
+    var main          = document.getElementById('mainBoard');
+    var setUpDiv      = document.getElementById('start-screen');
+    var firstPlayer   = document.getElementById('firstPlayer').value.toUpperCase();
+    var secondPlayer  = document.getElementById('secondPlayer').value.toUpperCase();
+    var firstColor    = document.getElementById('firstColor').value;
+    var secondColor   = document.getElementById('secondColor').value;
+    ultimateFlag      = document.getElementById('ultimateFlag').checked;
+
+
+    if ( firstPlayer && secondPlayer) {
+      if (firstPlayer !== secondPlayer) {
+        if (firstColor !== secondColor) {
+          main.removeChild(document.getElementById('start-screen'));
+          setUpBoard(ultimateFlag, firstPlayer, secondPlayer, firstColor, secondColor);
+        } else {
+          alert("Please choose different colors.");}
+      } else {
+        alert("Please choose different Player letters.");}
+    } else {
+      alert("Please fill out both fields.");}
+  }
+
+
+  function setUpBoard (flag, firstPlayer, secondPlayer, firstColor, secondColor) {
+    var main  = document.getElementById('mainBoard');
+    if (main.children[0]) {
+      main.removeChild(main.children[0]);
+    }
 
     function basicHash(nodeToAppend, ultimateHashIndex) {
+      //dont create a second board
+      // if (!flag) {
+      //   if (document.getElementsByTagName('table')[0]) {
+      //     main.removeChild(document.getElementsByTagName('table')[0]);
+      //   }
+      // }
+
       // creates a <table> element and a <tbody> element
       var tbl     = document.createElement("table");
       var tblBody = document.createElement("tbody");
+
+      if (!flag) {
+        tbl.style.margin = "50px auto"
+      }
 
       // creating all cells
       for (var i = 0; i < 3; i++) {
@@ -148,21 +247,21 @@
         var row = document.createElement("tr");
         row.setAttribute("class", "cellRow");
 
-        board[ultimateHashIndex.join('')].push([]);
+        // board[ultimateHashIndex.join('')].push([]);
 
         for (var j = 0; j < 3; j++) {
           // Create a <td> element and a text node, make the text
           // node the contents of the <td>, and put the <td> at
           // the end of the table row
-          var cell = document.createElement("td");
-          var cellID = 'i'+ultimateHashIndex[0]+ultimateHashIndex[1]+'/'+i+j;
-          var cellText = document.createTextNode("");
+          var cell      = document.createElement("td");
+          var cellID    = 'i'+ultimateHashIndex[0]+ultimateHashIndex[1]+'/'+i+j;
+          var cellText  = document.createTextNode("");
           cell.setAttribute("class", "cell");
           cell.setAttribute("id", cellID);
           cell.setAttribute("onClick", "cellWasClicked(this)")
 
           // set up board obj
-          board[ultimateHashIndex.join('')][i].push(0);
+          // board[ultimateHashIndex.join('')][i].push(0);
 
           cell.appendChild(cellText);
           row.appendChild(cell);
@@ -178,33 +277,38 @@
       nodeToAppend.appendChild(tbl);
       // sets the border attribute of tbl to 2;
       // tbl.setAttribute("border", "2");
-      playerX = new Player("X", "red");
-      playerO = new Player("O", "blue");
+      if (!playerX || !playerO) {
+        playerO = new Player(secondPlayer.toUpperCase(), secondColor);
+        playerX = new Player( firstPlayer.toUpperCase(), firstColor );
+      }
     }
 
     function ultimateHash () {
-      if (document.getElementById('ultimateTable')) {
-        if (confirm("Are you sure you want to reset?")) {
-          main.removeChild(document.getElementById('ultimateTable'));
-        } else {
-          return;
-        }
-      }
+      // if (document.getElementById('ultimateTable')) {
+      //     main.removeChild(document.getElementById('ultimateTable'));
+      // }
+
       var ultimateTbl = document.createElement("table");
       ultimateTbl.setAttribute("id", "ultimateTable");
       var ultimateTblBody = document.createElement("tbody");
-      board = {};
+
+      //initialize board obj
+      // board = {};
 
       for (var i = 0; i < 3; i++) {
         var ultimateRow = document.createElement("tr");
 
         for (var j = 0; j < 3; j++) {
 
-          var ultimateCell = document.createElement("td");
+          var ultimateCell   = document.createElement("td");
           var ultimateCellID = 'i'+i+'-'+j;
-          board[''+i+j] = [];
+          //add large cell to board
+          // board[''+i+j] = [];
+
           ultimateCell.setAttribute("class", "ultimateCell");
           ultimateCell.setAttribute("id", ultimateCellID);
+
+          //adds smaller board into ultimate cell
           basicHash(ultimateCell, [i,j]);
           ultimateRow.appendChild(ultimateCell);
          }
@@ -216,15 +320,17 @@
       main.appendChild(ultimateTbl);
 
     }
+
     if (flag) {
       ultimateHash();
     } else {
       basicHash(main, ["", ""]);
+
     }
   }
 // });
 
-setUpBoard(true);
+// setUpBoard(ultimate);
 
 
 
@@ -238,7 +344,22 @@ setUpBoard(true);
 
 
 
-
+  // var TicTacToeParent = function () {
+  //   this.state = false;
+  //   this.location = null;
+  //   this.setState = function (player) {
+  //     // this.state = player;
+  //   }
+  //   this.setLocation = function (location) {
+  //     //this.location = location;
+  //   }
+  // }
+  // var Cell = Object.create(TicTacToeParent);
+  //   Cell.wasClicked = function (player) {
+  //       //set click state
+  //   }
+  //   Cell.tableCell = document.createElement('td');
+  //   Cell.tableCell.addEventListener('click', function () {this.wasClicked();})
 
 
   // function checkWin (cell, player, ultimateId, smallId) {
