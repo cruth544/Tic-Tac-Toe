@@ -52,6 +52,10 @@
     // currentTurn.getPlayer().filledCells.push(arrayToPush);
   }
 
+  function drawLine (argument) {
+
+  }
+
   function storeCell (cell, player, ultimateId, smallId) {
     if (player[ultimateId]) {
       player[ultimateId].push(smallId);
@@ -400,31 +404,6 @@
   //   Cell.tableCell = document.createElement('td');
   //   Cell.tableCell.addEventListener('click', function () {this.wasClicked();})
 
-
-  // function checkWin (cell, player, ultimateId, smallId) {
-  //   if (player1.squaresWon.indexOf(ultimateId) === -1 && player2.squaresWon.indexOf(ultimateId) === -1) {
-  //     if (player.filledCells[ultimateId].length > 2) {
-  //       var countFirst  = [0,0,0];
-  //       var countSecond = [0,0,0];
-  //       for (var i = 0; i < player.filledCells[ultimateId].length; i++) {
-  //         countFirst[Number(player.filledCells[ultimateId][i].charAt(0))]++;
-  //         countSecond[Number(player.filledCells[ultimateId][i].charAt(1))]++;
-  //       }
-
-  //       if (countFirst.indexOf(3) > -1 || countSecond.indexOf(3) > -1) {
-  //         player.squaresWon.push(ultimateId);
-  //         console.log(player.letter, "wins!");
-  //       }
-  //       for (var i = 0; i < countFirst.length; i++) {
-  //         countFirst[i]--;
-  //         countSecond[i]--;
-  //       }
-  //       if (countFirst.indexOf(0) > -1 && countSecond.indexOf(0) > -1 && countFirst.indexOf(-1) < 0 && countSecond.indexOf(-1) < 0 && player.filledCells[ultimateId].indexOf('11') > -1) {
-  //         console.log(player.letter, "wins!");
-  //       }
-  //     }
-  //   }
-  // }
 
 
 
