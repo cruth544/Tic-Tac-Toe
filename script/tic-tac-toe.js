@@ -1,16 +1,16 @@
 // document.addEventListener("DOMContentLoaded", function(event) {
   var ultimateFlag;
-  var playerX;
-  var playerO;
+  var player1;
+  var player2;
 
   //turn logic
   var currentTurn = {
     turn: "X",
     getPlayer: function () {
       if (currentTurn.turn === "X") {
-        return playerX;
+        return player1;
       } else {
-        return playerO;
+        return player2;
       }
     },
     isTurnX: function () {
@@ -25,6 +25,11 @@
       var footer = document.getElementsByTagName('footer')[0]
       footer.innerHTML = currentTurn.getPlayer().letter + "'s turn";
       footer.style.color = currentTurn.getPlayer().color;
+    },
+    turnText: function () {
+      if (currentTurn.getPlayer() === player1) {
+        return currentTurn.getPlayer().letter + "'s turn";
+      }
     }
   }
 
@@ -37,7 +42,7 @@
     cell.style.color  = currentTurn.getPlayer().color;
 
     //fill board obj
-    // if (player === playerX) {
+    // if (player === player1) {
     //   board[ultimateId][smallId.charAt(0)][smallId.charAt(1)]++;
     // } else {
     //   board[ultimateId][smallId.charAt(0)][smallId.charAt(1)]--;
@@ -60,8 +65,8 @@
     //check to see if player has at least 3 moves in square
     if (player.filledCells[ultimateId].length > 2) {
       //check if either player has already won this square
-      if  (playerX.squaresWon.indexOf(ultimateId) === -1
-        && playerO.squaresWon.indexOf(ultimateId) === -1) {
+      if  (player1.squaresWon.indexOf(ultimateId) === -1
+        && player2.squaresWon.indexOf(ultimateId) === -1) {
         //check if player wins this square
         if (loopCheck(player.filledCells[ultimateId])) {
           if (!document.getElementById('ultimateTable')) {
@@ -113,7 +118,10 @@
   //next available board logic
   function isValidSquare (ultimateId) {
     //check if its the first move of the game
-    if (Object.keys(playerX.filledCells).length === 0) {
+    if (!ultimateFlag) {
+      return true;
+    }
+    if (Object.keys(player1.filledCells).length === 0) {
       return true;
     }
       var arrayOfUltimateCells = document.getElementsByClassName('ultimateCell');
@@ -136,7 +144,6 @@
         arrayOfUltimateCells[i].style.backgroundColor = "rgba(150, 150, 150, .6)"
       }
     }
-
   }
 
 //player parent
@@ -149,16 +156,20 @@
 
   //win function
   function winner (player) {
+    var cells             = document.getElementsByClassName('cell');
     var footer            = document.getElementsByTagName('footer')[0];
     footer.innerHTML      = player.letter + " WINS!";
     footer.style.color    = player.color;
     footer.style.fontSize = '48px';
 
-    if (document.getElementById('ultimateTable')) {
+    for (var i = 0; i < cells.length; i++) {
+      cells[i].removeAttribute('onClick');
+    };
+    // if (ultimateFlag) {
 
-    } else {
-      document.getElementsByTagName('tbody');
-    }
+    // } else {
+
+    // }
   }
 
   //what happens when a cell is clicked
@@ -191,6 +202,11 @@
     if (!document.getElementById('start-screen')) {
       if (confirm("Are you sure you want to reset?")) {
         setUpBoard(ultimateFlag);
+        //reset footer message
+        var footer            = document.getElementsByTagName('footer')[0];
+        footer.style.color    = currentTurn.getPlayer().color;
+        footer.style.fontSize = '24px';
+        footer.innerHTML      = currentTurn.turnText();
       }
     }
   }
@@ -277,9 +293,9 @@
       nodeToAppend.appendChild(tbl);
       // sets the border attribute of tbl to 2;
       // tbl.setAttribute("border", "2");
-      if (!playerX || !playerO) {
-        playerO = new Player(secondPlayer.toUpperCase(), secondColor);
-        playerX = new Player( firstPlayer.toUpperCase(), firstColor );
+      if (!player1 || !player2) {
+        player2 = new Player(secondPlayer.toUpperCase(), secondColor);
+        player1 = new Player( firstPlayer.toUpperCase(), firstColor );
       }
     }
 
@@ -363,7 +379,7 @@
 
 
   // function checkWin (cell, player, ultimateId, smallId) {
-  //   if (playerX.squaresWon.indexOf(ultimateId) === -1 && playerO.squaresWon.indexOf(ultimateId) === -1) {
+  //   if (player1.squaresWon.indexOf(ultimateId) === -1 && player2.squaresWon.indexOf(ultimateId) === -1) {
   //     if (player.filledCells[ultimateId].length > 2) {
   //       var countFirst  = [0,0,0];
   //       var countSecond = [0,0,0];
