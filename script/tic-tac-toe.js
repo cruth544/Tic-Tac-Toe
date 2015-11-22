@@ -198,15 +198,38 @@
     }
   }
 
+  function setUpFooter (winFlag) {
+    var footer            = document.getElementsByTagName('footer')[0];
+    var player            = currentTurn.getPlayer();
+
+    if (winFlag) {
+      var footer            = document.getElementsByTagName('footer')[0];
+      footer.innerHTML      = player.letter + " WINS!";
+      footer.style.color    = player.color;
+      footer.style.fontSize = '48px';
+    } else {
+      footer.style.color    = player.color;
+      footer.style.fontSize = '24px';
+      footer.innerHTML      = currentTurn.turnText();
+    }
+
+  }
+
+  function clearPlayerSquares () {
+    player1.filledCells = {};
+    player1.squaresWon = [];
+    player2.filledCells = {};
+    player2.squaresWon = [];
+  }
+
   function resetBoard () {
     if (!document.getElementById('start-screen')) {
       if (confirm("Are you sure you want to reset?")) {
         setUpBoard(ultimateFlag);
         //reset footer message
-        var footer            = document.getElementsByTagName('footer')[0];
-        footer.style.color    = currentTurn.getPlayer().color;
-        footer.style.fontSize = '24px';
-        footer.innerHTML      = currentTurn.turnText();
+        setUpFooter(false);
+        clearPlayerSquares();
+
       }
     }
   }
@@ -341,8 +364,8 @@
       ultimateHash();
     } else {
       basicHash(main, ["", ""]);
-
     }
+    setUpFooter(false);
   }
 // });
 
