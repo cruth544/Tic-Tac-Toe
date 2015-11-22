@@ -24,16 +24,22 @@
     }
   }
   function fillCell (cell) {
-    var cellText = document.createTextNode(currentTurn.getPlayer().letter);
-    cell.appendChild(cellText);
+    var cellText = currentTurn.getPlayer().letter;
+    cell.innerHTML = cellText;
+    // var cellText = document.createTextNode(currentTurn.getPlayer().letter);
+    // cell.appendChild(cellText);
     cell.style.color = currentTurn.getPlayer().color;
+    var arrayToPush = cell.getAttribute('id').replace(/i/g, '');
+    currentTurn.getPlayer().filledCells.push(arrayToPush);
     currentTurn.changeTurns();
   }
 
   //winning logic
-  var filledCells;
   function checkWin (cell) {
-
+    var id = cell.getAttribute('id');
+    var ultimateId = id.replace(/i/g, '').split('/')[0].split('');
+    var smallId = id.split('/')[1].split('');
+    console.log(smallId, ultimateId);
   }
 
 //player parent
@@ -45,10 +51,11 @@
 
   //what happens when a cell is clicked
   function cellWasClicked (cell) {
-    console.log(cell.getAttribute("id"), "was clicked")
-
-    fillCell(cell);
-
+    if (!cell.innerHTML) {
+      // console.log(cell.getAttribute("id"), "was clicked")
+      fillCell(cell);
+      checkWin(cell);
+    }
   }
 
   var TicTacToeParent = function () {
