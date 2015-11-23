@@ -2,6 +2,15 @@
   var ultimateFlag;
   var player1;
   var player2;
+  var board;
+
+//player parent
+  function Player (letter, color) {
+    this.letter = letter;
+    this.color = color;
+    this.filledCells = {};
+    this.squaresWon = [];
+  }
 
   //turn logic
   var currentTurn = {
@@ -27,45 +36,35 @@
       footer.style.color = currentTurn.getPlayer().color;
     },
     turnText: function () {
-      if (currentTurn.getPlayer() === player1) {
+      // if (currentTurn.getPlayer() === player1) {
         return currentTurn.getPlayer().letter + "'s turn";
-      }
+      // }
     }
   }
-
-  //keep a reference of what the board looks like
-  // var board;
 
   function fillCell (cell, player, ultimateId, smallId) {
     var cellText      = currentTurn.getPlayer().letter;
     cell.innerHTML    = cellText;
     cell.style.color  = currentTurn.getPlayer().color;
-
-    //fill board obj
-    // if (player === player1) {
-    //   board[ultimateId][smallId.charAt(0)][smallId.charAt(1)]++;
-    // } else {
-    //   board[ultimateId][smallId.charAt(0)][smallId.charAt(1)]--;
-    // }
-
-    // var arrayToPush = cell.getAttribute('id').replace(/i/g, '');
-    // currentTurn.getPlayer().filledCells.push(arrayToPush);
   }
 
   function drawLine (argument) {
 
   }
 
-  function storeCell (cell, player, ultimateId, smallId) {
+  function storeCell (player, ultimateId, smallId) {
     if (player[ultimateId]) {
       player[ultimateId].push(smallId);
     } else {
       player[ultimateId] = [smallId];
     }
+    if (ultimateFlag) {
+      board[ultimateId].push(smallId);
+    }
   }
 
   //winning logic
-  function checkWin (cell, player, ultimateId, smallId) {
+  function checkWin (player, ultimateId, smallId) {
     //check to see if player has at least 3 moves in square
     if (player.filledCells[ultimateId].length > 2) {
       //check if either player has already won this square
@@ -77,6 +76,15 @@
             console.log("GAME OVER");
             return true;
           }
+
+          winOverlayLetter(ultimateId, '.5');
+          // var style       = window.getComputedStyle(div);
+          // var letterColor = style.getPropertyValue('color');
+          // letterColor     = letterColor.substring(letterColor.indexOf('(')+1,
+          //                                         letterColor.indexOf(')'));
+          // letterColor     = 'rgba(' + letterColor + ', .8'
+
+
           console.log(player.letter, "wins the box");
           //add sqaure to players won square
           player.squaresWon.push(ultimateId);
@@ -119,8 +127,16 @@
     return false;
   }
 
+//check if all sqaures are filled
+  function specialValidSquareCase (smallId) {
+    if (ultimateFlag) {
+      return board[smallId].length === 9;
+    }
+    return true;
+  }
+
   //next available board logic
-  function isValidSquare (ultimateId) {
+  function isValidSquare (ultimateId, smallId) {
     //check if its the first move of the game
     if (!ultimateFlag) {
       return true;
@@ -128,9 +144,13 @@
     if (Object.keys(player1.filledCells).length === 0) {
       return true;
     }
+    if (specialValidSquareCase(smallId)) {
+      return true;
+    }
       var arrayOfUltimateCells = document.getElementsByClassName('ultimateCell');
       for (var i = 0; i < arrayOfUltimateCells.length; i++) {
-        if (arrayOfUltimateCells[i].getAttribute('style') === 'background-color: white;') {
+        var style = window.getComputedStyle(arrayOfUltimateCells[i]);
+        if (style.getPropertyValue('background-color') === 'rgb(255, 255, 255)') {
           if (arrayOfUltimateCells[i].getAttribute('id').replace(/i/g, '').replace(/-/g, '') === ultimateId) {
             return true;
           }
@@ -139,32 +159,31 @@
       return false;
   }
 
-  function setCellBackground (smallId) {
+  function setCellBackground (smallId, specialCase) {
     var arrayOfUltimateCells = document.getElementsByClassName('ultimateCell');
+    var color = "rgba(150, 150, 150, .6)";
+    if (specialCase) {
+      color = "white";
+    }
     for (var i = 0; i < arrayOfUltimateCells.length; i++) {
       if (arrayOfUltimateCells[i].getAttribute('id').replace(/i/g, '').replace(/-/g, '') === smallId) {
         arrayOfUltimateCells[i].style.backgroundColor = 'white';
       } else {
-        arrayOfUltimateCells[i].style.backgroundColor = "rgba(150, 150, 150, .6)"
+        arrayOfUltimateCells[i].style.backgroundColor = color;
       }
     }
   }
 
-//player parent
-  function Player (letter, color) {
-    this.letter = letter;
-    this.color = color;
-    this.filledCells = {};
-    this.squaresWon = [];
-  }
 
   //win function
   function winner (player) {
     var cells             = document.getElementsByClassName('cell');
     var footer            = document.getElementsByTagName('footer')[0];
-    footer.innerHTML      = player.letter + " WINS!";
+    footer.innerHTML      = "Congratulations " + player.letter + "!!!";
     footer.style.color    = player.color;
     footer.style.fontSize = '48px';
+
+    winOverlayLetter('UltOverlay', '.8');
 
     for (var i = 0; i < cells.length; i++) {
       cells[i].removeAttribute('onClick');
@@ -174,6 +193,16 @@
     // } else {
 
     // }
+  }
+
+  function winOverlayLetter (id, opacity) {
+    var div           = document.getElementById('div'+id);
+    if (!ultimateFlag) {
+      div             = document.getElementsByClassName('winnerDiv')[0];
+    }
+    div.innerHTML     = currentTurn.turn;
+    div.style.color   = currentTurn.getPlayer().color;
+    div.style.opacity = opacity;
   }
 
   //what happens when a cell is clicked
@@ -187,15 +216,18 @@
       // console.log(cell.getAttribute("id"), "was clicked")
 
       //check if square is in next valid square
-      if (isValidSquare(ultimateId)) {
+      if (isValidSquare(ultimateId, smallId)) {
+        //fill cell first, then set background color, then store
+        //in order for special case logic
         fillCell(cell, player, ultimateId, smallId);
-        storeCell(cell, player.filledCells, ultimateId, smallId);
-        if (checkWin(cell, player, ultimateId, smallId)) {
+        setCellBackground(smallId, specialValidSquareCase(smallId));
+        storeCell(player.filledCells, ultimateId, smallId);
+        if (checkWin(player, ultimateId, smallId)) {
           winner(player);
+          setCellBackground(smallId, true);
           console.log(player.letter, 'WINS THE GAME!');
           return;
         }
-        setCellBackground(smallId);
 
         currentTurn.changeTurns();
       }
@@ -261,24 +293,41 @@
       alert("Please fill out both fields.");}
   }
 
-
   function setUpBoard (flag, firstPlayer, secondPlayer, firstColor, secondColor) {
     var main  = document.getElementById('mainBoard');
     if (main.children[0]) {
       main.removeChild(main.children[0]);
     }
 
+    //create div to overlay cells with the winner
+      function winnerOverlayBox (divID) {
+        var div = document.createElement('div');
+        divID   = divID.join('').replace(/i/g, '');
+
+        // div.appendChild(drawingPad);
+        div.setAttribute('class', 'winnerDiv');
+        div.setAttribute('id',    'div' + divID);
+        div.style.position        = 'absolute';
+        div.style.height          = '100%';
+        div.style.width           = '100%';
+        div.style.top             = '0';
+        div.style.left            = '0';
+        div.style.zIndex          = '10';
+        div.style.pointerEvents   = 'none';
+        if (!ultimateFlag) {
+          div.style.marginTop     = '94px';
+        }
+
+        return div;
+      }
+
     function basicHash(nodeToAppend, ultimateHashIndex) {
-      //dont create a second board
-      // if (!flag) {
-      //   if (document.getElementsByTagName('table')[0]) {
-      //     main.removeChild(document.getElementsByTagName('table')[0]);
-      //   }
-      // }
 
       // creates a <table> element and a <tbody> element
       var tbl     = document.createElement("table");
       var tblBody = document.createElement("tbody");
+
+      tblBody.style.position = 'relative';
 
       if (!flag) {
         tbl.style.margin = "50px auto"
@@ -316,6 +365,7 @@
 
       // put the <tbody> in the <table>
       tbl.appendChild(tblBody);
+      tbl.appendChild(winnerOverlayBox(ultimateHashIndex));
       // appends <table> into <body>
       nodeToAppend.appendChild(tbl);
       // sets the border attribute of tbl to 2;
@@ -336,20 +386,22 @@
       var ultimateTblBody = document.createElement("tbody");
 
       //initialize board obj
-      // board = {};
+      board = {};
 
       for (var i = 0; i < 3; i++) {
         var ultimateRow = document.createElement("tr");
 
         for (var j = 0; j < 3; j++) {
 
-          var ultimateCell   = document.createElement("td");
-          var ultimateCellID = 'i'+i+'-'+j;
+          var ultimateCell    = document.createElement("td");
+          var ultimateCellID  = 'i'+i+'-'+j;
+
           //add large cell to board
-          // board[''+i+j] = [];
+          board[''+i+j] = [];
 
           ultimateCell.setAttribute("class", "ultimateCell");
           ultimateCell.setAttribute("id", ultimateCellID);
+          ultimateCell.style.position = "relative";
 
           //adds smaller board into ultimate cell
           basicHash(ultimateCell, [i,j]);
@@ -359,6 +411,7 @@
          ultimateTblBody.appendChild(ultimateRow);
       }
 
+      ultimateTblBody.appendChild(winnerOverlayBox(['UltOverlay', '']));
       ultimateTbl.appendChild(ultimateTblBody);
       main.appendChild(ultimateTbl);
 
@@ -371,9 +424,6 @@
     }
     setUpFooter(false);
   }
-// });
-
-// setUpBoard(ultimate);
 
 
 
@@ -384,45 +434,3 @@
 
 
 
-
-
-
-  // var TicTacToeParent = function () {
-  //   this.state = false;
-  //   this.location = null;
-  //   this.setState = function (player) {
-  //     // this.state = player;
-  //   }
-  //   this.setLocation = function (location) {
-  //     //this.location = location;
-  //   }
-  // }
-  // var Cell = Object.create(TicTacToeParent);
-  //   Cell.wasClicked = function (player) {
-  //       //set click state
-  //   }
-  //   Cell.tableCell = document.createElement('td');
-  //   Cell.tableCell.addEventListener('click', function () {this.wasClicked();})
-
-
-
-
-    // function loopBoard (version) {
-    //   var divString = '<div id="bigBoard" class="hash"><br>\n';
-    //   for (var i = 0; i < 9; i++) {
-    //     divString += '<div class="hash bigger" id="[' + i + ']">\n';
-    //     if (i % 3 === 0) {
-    //       divString += '<br>\n';
-    //     };
-    //     for (var j = 0; j < 9; j++) {
-    //       divString += '<div class="hash inner" id="[' + i + '][' + j + ']"></div>\n';
-    //       if (j % 3 === 0) {
-    //         divString += '<br>\n';
-    //       }
-    //     }
-    //     divString += '</div>\n';
-    //   }
-    //   divString += '</div>\n';
-    //   return divString;
-    // }
-    // main.innerHTML = loopBoard();
