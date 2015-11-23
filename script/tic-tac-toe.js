@@ -1,5 +1,5 @@
 // document.addEventListener("DOMContentLoaded", function(event) {
-  var ultimateFlag;
+  var ultimateFlag = false;
   var player1;
   var player2;
   var board;
@@ -277,7 +277,9 @@
     var secondPlayer  = document.getElementById('secondPlayer').value.toUpperCase();
     var firstColor    = document.getElementById('firstColor').value;
     var secondColor   = document.getElementById('secondColor').value;
-    ultimateFlag      = document.getElementById('ultimateFlag').checked;
+    if (document.getElementById('ultimateFlag')) {
+      ultimateFlag    = document.getElementById('ultimateFlag').checked;
+    }
 
 
     if ( firstPlayer && secondPlayer) {
