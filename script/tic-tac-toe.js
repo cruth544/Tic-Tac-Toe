@@ -14,22 +14,22 @@
 
   //turn logic
   var currentTurn = {
-    turn: "X",
+    turn: document.getElementById("firstPlayer").value,
     getPlayer: function () {
-      if (currentTurn.turn === "X") {
+      if (currentTurn.turn === player1.letter) {
         return player1;
       } else {
         return player2;
       }
     },
     isTurnX: function () {
-      return currentTurn.turn === "X";
+      return currentTurn.turn === player1.letter;
     },
     changeTurns: function () {
       if (currentTurn.isTurnX()) {
-        currentTurn.turn = "O";
+        currentTurn.turn = player2.letter;
       } else {
-        currentTurn.turn = "X";
+        currentTurn.turn = player1.letter;
       }
       var footer = document.getElementsByTagName('footer')[0]
       footer.innerHTML = currentTurn.getPlayer().letter + "'s turn";
@@ -300,6 +300,12 @@
     if (main.children[0]) {
       main.removeChild(main.children[0]);
     }
+    if (!player1 || !player2) {
+      player1 = new Player( firstPlayer.toUpperCase(), firstColor );
+      player2 = new Player(secondPlayer.toUpperCase(), secondColor);
+      //need to set first turn player
+      currentTurn.turn = player1.letter;
+    }
 
     //create div to overlay cells with the winner
       function winnerOverlayBox (divID) {
@@ -372,10 +378,6 @@
       nodeToAppend.appendChild(tbl);
       // sets the border attribute of tbl to 2;
       // tbl.setAttribute("border", "2");
-      if (!player1 || !player2) {
-        player2 = new Player(secondPlayer.toUpperCase(), secondColor);
-        player1 = new Player( firstPlayer.toUpperCase(), firstColor );
-      }
     }
 
     function ultimateHash () {
