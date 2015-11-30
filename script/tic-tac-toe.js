@@ -358,7 +358,10 @@
           var cellText  = document.createTextNode("");
           cell.setAttribute("class", "cell");
           cell.setAttribute("id", cellID);
-          cell.setAttribute("onClick", "cellWasClicked(this)")
+          cell.addEventListener('click', function () {
+            cellWasClicked(this);
+          });
+          // cell.setAttribute("onClick", "cellWasClicked(this)")
 
           // set up board obj
           // board[ultimateHashIndex.join('')][i].push(0);
